@@ -20,9 +20,13 @@ And import it into your files like so:
 ```const jwt = require('jsonwebtoken')```
 
 1.To sign a token, you will need to have 3 pieces of information:
+
  -The token secret
+ 
  -The piece of data to hash in the token
+ 
  -The token expire time
+ 
 The token secret is a long random string used to encrypt and decrypt the data.
 
 To generate this secret, one option is to use Node.js’s built-in crypto library, like so:
