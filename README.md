@@ -19,7 +19,7 @@ You can add it to your JavaScript project by running the following command in yo
 And import it into your files like so:
 ```const jwt = require('jsonwebtoken')```
 
-To sign a token, you will need to have 3 pieces of information:
+1.To sign a token, you will need to have 3 pieces of information:
  -The token secret
  -The piece of data to hash in the token
  -The token expire time
