@@ -10,13 +10,15 @@ One common use case is for allowing clients to preserve their session informatio
 ## Prerequisites
 Node.js installed locally, which you can do by following How to Install Node.js and Create a Local Development Environment.
 
-**Step 1  Generating a Token**
+**Step 1 - Generating a Token**
 [jsonwebtoken] is an implementation of JSON Web Tokens.
 
 You can add it to your JavaScript project by running the following command in your terminal:
+
 ``` npm install jsonwebtoken ```
 
 And import it into your files like so:
+
 ```const jwt = require('jsonwebtoken')```
 
 1. To sign a token, you will need to have 3 pieces of information:
