@@ -1,6 +1,5 @@
-[![Release](https://img.shields.io/github/release/PhilJay/JWT.svg?style=flat)](https://jitpack.io/#PhilJay/JWT)
-
 # JWT
+
 How To Use JSON Web Tokens (JWTs) in Express.js
 
 ## Introduction
