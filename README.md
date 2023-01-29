@@ -20,9 +20,9 @@ And import it into your files like so:
 ```const jwt = require('jsonwebtoken')```
 
 To sign a token, you will need to have 3 pieces of information:
- The token secret
- The piece of data to hash in the token
- The token expire time
+ -The token secret
+ -The piece of data to hash in the token
+ -The token expire time
 The token secret is a long random string used to encrypt and decrypt the data.
 
 To generate this secret, one option is to use Node.js’s built-in crypto library, like so:
@@ -83,7 +83,7 @@ There are many ways to go about implementing a JWT authentication system in an E
 
 One approach is to utilize the middleware functionality in Express.js.
 
-How it works is when a request is made to a specific route, you can have the (req, res) variables sent to an intermediary function before the one specified in the app.get((req, res) => {}).
+How it works is when a request is made to a specific route, you can have the (req, res) variables sent to an intermediary function before the one specified in the ```app.get((req, res) => {})```.
 
 The middleware is a function that takes parameters of (req, res, next).
 
