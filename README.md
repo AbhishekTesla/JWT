@@ -21,21 +21,24 @@ And import it into your files like so:
 
 1. To sign a token, you will need to have 3 pieces of information:
 
-    -The token secret
+    The token secret
  
-    -The piece of data to hash in the token
+    The piece of data to hash in the token
  
-    -The token expire time
+    The token expire time
  
 The token secret is a long random string used to encrypt and decrypt the data.
 
 To generate this secret, one option is to use Node.js’s built-in crypto library, like so:
+
 ```> require('crypto').randomBytes(64).toString('hex')```
 
 Now, store this secret in your project’s .env file:
+
 ``` TOKEN_SECRET=09f26e402586e2faa8da4c98a35f1b20d6b033c60....```
 
 To bring this token into a Node.js file and to use it, you have to use ```dotenv```:
+
 ```npm install dotenv```
 
 And import it into your files like so:
@@ -92,8 +95,11 @@ How it works is when a request is made to a specific route, you can have the (re
 The middleware is a function that takes parameters of (req, res, next).
 
 The req is the sent request (GET, POST, DELETE, PUT, etc.).
+
 The res is the response that can be sent back to the user in a multitude of ways (res.sendStatus(200), res.json(), etc.).
+
 The next is a function that can be called to move the execution past the piece of middleware and into the actual app.get server response.
+
 Here is an example middleware function for authentication:
 
 ```
@@ -134,6 +140,7 @@ app.get('/api/userOrders', authenticateToken, (req, res) => {
 This code will authenticate the token provided by the client. If it is valid, it can proceed to the request. If it is not valid, it can be handled as an error.
 
 **Step 3 — Handling Client-Side Tokens**
+
 When the client receives the token, they often want to store it for gathering user information in future requests.
 
 The most popular manner for storing auth tokens is in an HttpOnly cookie.
