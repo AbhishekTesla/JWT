@@ -1,157 +1,146 @@
 [![Release](https://img.shields.io/github/release/PhilJay/JWT.svg?style=flat)](https://jitpack.io/#PhilJay/JWT)
 
 # JWT
-Lightweight Kotlin JWT implementation (Json Web Token) designed for **Apple**, as required by APNs (Apple Push Notification Service) or Sign in with Apple (including JWT verification via JWK), for use on Kotlin powered backend servers. Eases the process of creating & verifying the token based on your credentials.
+How To Use JSON Web Tokens (JWTs) in Express.js
 
-No other dependencies required.
+## Introduction
+JSON Web Tokens (JWTs) supports authorization and information exchange.
 
-## Algorithms supported
- - ES256
- - RS256
+One common use case is for allowing clients to preserve their session information after logging in. By storing the session information locally and passing it to the server for authentication when making requests, the server can trust that the client is a registered user.
 
-## Dependency 
+## Prerequisites
+Node.js installed locally, which you can do by following How to Install Node.js and Create a Local Development Environment.
 
-Requires **Java 14**.
+**Step 1 — Generating a Token**
+[jsonwebtoken] is an implementation of JSON Web Tokens.
 
-Add the following to your **build.gradle** file:
-```groovy
-allprojects {
-    repositories {
-        maven { url 'https://jitpack.io' }
-    }
+You can add it to your JavaScript project by running the following command in your terminal:
+``` npm install jsonwebtoken ```
+
+And import it into your files like so:
+```const jwt = require('jsonwebtoken')```
+
+To sign a token, you will need to have 3 pieces of information:
+ The token secret
+ The piece of data to hash in the token
+ The token expire time
+The token secret is a long random string used to encrypt and decrypt the data.
+
+To generate this secret, one option is to use Node.js’s built-in crypto library, like so:
+```> require('crypto').randomBytes(64).toString('hex')```
+
+Now, store this secret in your project’s .env file:
+``` TOKEN_SECRET=09f26e402586e2faa8da4c98a35f1b20d6b033c60....```
+
+To bring this token into a Node.js file and to use it, you have to use ```dotenv```:
+```npm install dotenv```
+
+And import it into your files like so:
+
+```
+const dotenv = require('dotenv');
+
+// get config vars
+dotenv.config();
+
+// access config var
+process.env.TOKEN_SECRET;
+
+```
+
+The piece of data that you hash in your token can be something either a user ID or username or a much more complex object. In either case, it should be an identifier for a specific user.
+
+The token expire time is a string, such as 1800 seconds (30 minutes), that details how long until the token will be invalid.
+
+Here’s an example of a function for signing tokens:
+
+```
+function generateAccessToken(username) {
+  return jwt.sign(username, process.env.TOKEN_SECRET, { expiresIn: '1800s' });
 }
+```
 
-dependencies {
-    implementation 'com.github.PhilJay:JWT:1.2.6'
+This can be sent back from a request to sign in or log in a user:
+
+```
+app.post('/api/createNewUser', (req, res) => {
+  // ...
+
+  const token = generateAccessToken({ username: req.body.username });
+  res.json(token);
+
+  // ...
+});
+```
+
+This example takes the ```username``` value from the ```req``` (request). And provides the token as the ```res``` (response).
+
+That concludes how ```jsonwebtoken```, crypto, and ```dotenv``` can be used to generate a JWT.
+
+
+**Step 2 — Authenticating a Token**
+
+There are many ways to go about implementing a JWT authentication system in an Express.js application.
+
+One approach is to utilize the middleware functionality in Express.js.
+
+How it works is when a request is made to a specific route, you can have the (req, res) variables sent to an intermediary function before the one specified in the app.get((req, res) => {}).
+
+The middleware is a function that takes parameters of (req, res, next).
+
+The req is the sent request (GET, POST, DELETE, PUT, etc.).
+The res is the response that can be sent back to the user in a multitude of ways (res.sendStatus(200), res.json(), etc.).
+The next is a function that can be called to move the execution past the piece of middleware and into the actual app.get server response.
+Here is an example middleware function for authentication:
+
+```
+const jwt = require('jsonwebtoken');
+
+function authenticateToken(req, res, next) {
+  const authHeader = req.headers['authorization']
+  const token = authHeader && authHeader.split(' ')[1]
+
+  if (token == null) return res.sendStatus(401)
+
+  jwt.verify(token, process.env.TOKEN_SECRET as string, (err: any, user: any) => {
+    console.log(err)
+
+    if (err) return res.sendStatus(403)
+
+    req.user = user
+
+    next()
+  })
 }
 ```
 
-Or add the following to your **pom.xml**:
-
-```xml
-<repositories>
-    <repository>
-        <id>jitpack.io</id>
-        <url>https://jitpack.io</url>
-    </repository>
-</repositories>
-
-<dependency>
-    <groupId>com.github.PhilJay</groupId>
-    <artifactId>JWT</artifactId>
-    <version>1.2.6</version>
-</dependency>
-```
-
-## Creating JWT
-
-Create required encoders, decoders and JSON Mapper (e.g. Gson or equivalent). These are later used to properly encode or decode the token header and payload.
-
-```kotlin
-    val gson = GsonBuilder().create()
- 
-    // generic JSON encoder
-    val jsonEncoder = object : JsonEncoder<JWTAuthHeader, JWTAuthPayload> {
-        override fun toJson(header: JWTAuthHeader): String {
-            return gson.toJson(header, JWTAuthHeader::class.java)
-        }
-    
-        override fun toJson(payload: JWTAuthPayload): String {
-            return gson.toJson(payload, JWTAuthPayload::class.java)
-        }
-    }
-
-    // Base64 encoder using apache commons
-    private val encoder = object : Base64Encoder {
-        override fun encodeURLSafe(bytes: ByteArray): String {
-            return Base64.encodeBase64URLSafeString(bytes)
-        }
-    
-        override fun encode(bytes: ByteArray): String {
-            return Base64.encodeBase64String(bytes)
-        }
-    }
-
-    // Base64 decoder using apache commons
-    private val decoder = object : Base64Decoder {
-        override fun decode(bytes: ByteArray): ByteArray {
-            return Base64.decodeBase64(bytes)
-        }
-    
-        override fun decode(string: String): ByteArray {
-            return Base64.decodeBase64(string)
-        }
-    }
-```
-
-Create the Apple JWT token by providing your teamId, keyId and secret (private key excluding header and footer). The teamId can be obtained from the developer member center. The keyId can be obtained when you create your secret (private key).
-
-```kotlin
-    val token = JWT.tokenApple("teamId", "keyId", "secret", jsonEncoder, encoder, decoder)
-```
-
-Create any JWT token by providing the required algorithm, header, payload and secret (private key):
-
-```kotlin
-    val header = JWTAuthHeader(...)
-    val payload = JWTAuthPayload(...)
-    val token = JWT.token(Algorithm.ES256, header, payload, "secret", jsonEncoder, encoder, decoder)
-```
-
-## Decoding JWT
-
-If you want to decode a JWT String, create a JSON decoder:
-
-```kotlin
-    private val jsonDecoder = object : JsonDecoder<JWTAuthHeader, JWTAuthPayload> {
-
-        override fun headerFrom(json: String): JWTAuthHeader {
-            return gson.fromJson(json, JWTAuthHeader::class.java)
-        }
-
-        override fun payloadFrom(json: String): JWTAuthPayload {
-            return gson.fromJson(json, JWTAuthPayload::class.java)
-        }
-    }
-```
-
-Use the json decoder to decode your token String:
-```kotlin
-    val tokenString = "ey..." // a valid JWT as a String
-    val t: JWTToken<JWTAuthHeader, JWTAuthPayload>? = JWT.decode(tokenString, jsonDecoder, decoder)
-    
-    // conveniently access properties of the token...
-    val issuer = t?.payload?.iss
-```
-
-## Verifying
-
-In order to verify a JWT received from **Sign in with Apple**, securely transmit it to your backend, then [obtain a JWK (Json Web Key) from Apple](https://developer.apple.com/documentation/signinwithapplerestapi/fetch_apple_s_public_key_for_verifying_token_signature) and use it as a public key for verification: 
-
-```kotlin
-    val jwk: JWKObject = ... // fetch current JWK (public key) from Apple endpoint
-    val tokenString = "ey..." // the token to validate / verify (obtained from Sign in with Apple)
-    
-    // turns JWK into RSA public key, returns true if validation is successful
-    val valid = JWT.verify(tokenString, jwk, decoder) 
-```
-
-## Usage with APNs
-
-Include the token in the authentication header when you make yor push notification request to APNs:
+An example request using this middleware function would resemble something like this:
 
 ```
-   'authentication' 'bearer $token'
+GET https://example.com:4000/api/userOrders
+Authorization: Bearer JWT_ACCESS_TOKEN
 ```
-
-
-
-If you are [sending pushes to iOS 13+ devices](https://developer.apple.com/documentation/usernotifications/setting_up_a_remote_notification_server/sending_notification_requests_to_apns), also include the `apns-push-type` header:
+And an example of a request that would use that piece of middleware would resemble something like this:
 
 ```
-   'apns-push-type' 'alert' // possible values are 'alert' or 'background'
+app.get('/api/userOrders', authenticateToken, (req, res) => {
+  // executes after authenticateToken
+  // ...
+})
 ```
+This code will authenticate the token provided by the client. If it is valid, it can proceed to the request. If it is not valid, it can be handled as an error.
 
-## Documentation
+**Step 3 — Handling Client-Side Tokens**
+When the client receives the token, they often want to store it for gathering user information in future requests.
 
-For a detailed guide, please visit the [APNs documentation](https://developer.apple.com/library/archive/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/APNSOverview.html#//apple_ref/doc/uid/TP40008194-CH8-SW1) page by Apple as well as the [verifying users](https://developer.apple.com/documentation/signinwithapplerestapi/verifying_a_user) and [generating tokens](https://developer.apple.com/documentation/signinwithapplerestapi/generate_and_validate_tokens) pages for Sign in with Apple. [jwt.io](https://jwt.io) is a good page for "debugging" tokens.
+The most popular manner for storing auth tokens is in an HttpOnly cookie.
+
+Here’s an implementation for storing a cookie using client-side JavaScript code:
+
+```
+// get token from fetch request
+const token = await res.json();
+
+// set token in cookie
+document.cookie = `token=${token}`
+```
