@@ -10,7 +10,7 @@ One common use case is for allowing clients to preserve their session informatio
 ## Prerequisites
 Node.js installed locally, which you can do by following How to Install Node.js and Create a Local Development Environment.
 
-**Step 1 — Generating a Token**
+**Step 1  Generating a Token**
 [jsonwebtoken] is an implementation of JSON Web Tokens.
 
 You can add it to your JavaScript project by running the following command in your terminal:
@@ -77,7 +77,7 @@ This example takes the ```username``` value from the ```req``` (request). And pr
 That concludes how ```jsonwebtoken```, crypto, and ```dotenv``` can be used to generate a JWT.
 
 
-**Step 2 — Authenticating a Token**
+**Step 2  Authenticating a Token**
 
 There are many ways to go about implementing a JWT authentication system in an Express.js application.
 
